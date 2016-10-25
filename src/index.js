@@ -3,14 +3,16 @@ import apkparser from 'apkparser'
 import PERMISSIONS from '../permissions'
 import chalk from 'chalk'
 import _ from 'lodash'
+import Types from './Types'
 
 const info = chalk.blue;
 const warn = chalk.yellow;
 
 class AdbMocker{
-  constructor(deviceId, apkPath) {
+  constructor(deviceId, apkPath, types) {
     this._device = new Device(deviceId);
     this._apkPath = apkPath;
+    this._types = this.setType(types);
   }
 
   /**
@@ -46,8 +48,33 @@ class AdbMocker{
 
     console.log('正在根据已赋权限检测设备环境...');
     this.check(gPermissions);
-    console.log('正在根据权限mock数据...')
 
+    console.log('正在根据已赋权限mock数据...');
+    this.mock(gPermissions);
+
+    console.log('正在根据配置的类型mock数据');
+    this.push(this._types);
+  }
+
+  setType(types) {
+    this._types = types;
+  }
+
+  /**
+   * 根据应用类型push数据到设备中
+   * @param types
+   */
+  push(types) {
+    types.forEach(type => {
+      switch(type) {
+        // 音乐编辑,播放类型
+        case Types.MUSIC: this.mockMusics(); break;
+        // 视频播放,编辑等类型
+        case Types.VIDEO: this.mockVideos(); break;
+        // 图片处理,显示等类型
+        case Types.PHOTO: this.mockPhotos(); break;
+      }
+    });
   }
 
   /**
@@ -57,9 +84,10 @@ class AdbMocker{
   check(permissions) {
     permissions.forEach(permission => {
       switch(permission) {
-        // 检测网络
+        // 检测网络是否畅通
         case 'android.permission.INTERNET': this.checkNetWork(); break;
-
+        // 检查蓝牙是否打开
+        case 'android.permission.BLUETOOTH': this.checkBluetooth();break;
       }
     });
   }
@@ -82,7 +110,13 @@ class AdbMocker{
   checkNetWork() {
     console.log('应用申请了网络相关权限,正在检查设备网络情况...');
     // this._device.
+  }
 
+  /**
+   * 检查蓝牙是否打开
+   */
+  checkBluetooth() {
+    console.log('应用申请了蓝牙相关权限,正在检查蓝牙是否打开...');
   }
 
   /**
@@ -154,7 +188,7 @@ class AdbMocker{
 
   /**
    * mock视频文件
-   * 应用类型包括Videoe
+   * 应用类型包括Video
    * @param num
    */
   mockVideos(num = 3) {
@@ -162,10 +196,19 @@ class AdbMocker{
   }
 
   /**
+   * mock照片文件
+   * 应用类型包括Photos
+   * @param num
+   */
+  mockPhotos(num = 10) {
+
+  }
+
+  /**
    * 将任何类型的文件push到设备的SD卡中
    * @param filePath
    */
-  pushFiles(filePath) {
+  pushFile(filePath) {
 
   }
 }
