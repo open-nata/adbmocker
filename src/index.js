@@ -4,6 +4,7 @@ import PERMISSIONS from '../permissions'
 import chalk from 'chalk'
 import _ from 'lodash'
 import Types from './Types'
+import path from 'path'
 
 const info = chalk.blue;
 const warn = chalk.yellow;
@@ -81,15 +82,16 @@ class AdbMocker{
    * 根据权限检测设备环境
    * @param permissions
    */
-  check(permissions) {
-    permissions.forEach(permission => {
+  async check(permissions) {
+    for(let i = 0 ; i< permissions.length ; i++) {
+      let permission = permissions[i];
       switch(permission) {
         // 检测网络是否畅通
-        case 'android.permission.INTERNET': this.checkNetWork(); break;
+        case 'android.permission.INTERNET': await this.checkNetWork(); break;
         // 检查蓝牙是否打开
-        case 'android.permission.BLUETOOTH': this.checkBluetooth();break;
+        case 'android.permission.BLUETOOTH': await this.checkBluetooth();break;
       }
-    });
+    }
   }
 
   /**
@@ -105,11 +107,17 @@ class AdbMocker{
   }
 
   /**
-   * 检测网络状况
+   * 检测网络状况 with ping
    */
-  checkNetWork() {
+  async checkNetWork() {
     console.log('应用申请了网络相关权限,正在检查设备网络情况...');
-    // this._device.
+    const output = await this._device.adbshell('ping -c 4 www.baidu.com');
+    const connect = /4 received/.test(output);
+    if (connect) {
+      console.log('网络连接良好');
+    } else {
+      console.log('无法连接网络或网络连接太差,请检查网络');
+    }
   }
 
   /**
@@ -144,16 +152,22 @@ class AdbMocker{
    * mock联系人
    * @param num
    */
-  mockContacts(num = 10) {
-
+  async mockContacts() {
+     await this._device.adbshell('pm clear com.android.providers.contacts');
+     await Device.shell(`adb push ${path.join(__dirname, "/../assets/contacts.vcf")} /sdcard/contacts.vcf`);
+     await this._device.adbshell('am start -t "text/x-vcard" -d "file:///sdcard/contacts.vcf" -a android.intent.action.VIEW com.android.contacts');
   }
 
   /**
-   * mock 通话记录
+   * mock 通话记录, 只能mock打电话
    * @param num
    */
-  mockCalls(num = 10) {
-
+  async mockCalls() {
+    for(let i = 0; i < 20; i++) {
+      let number = Math.floor(Math.random()*1000000000+1);
+      await this._device.adbshell(`am start -a android.intent.action.CALL tel:${number}`);
+      await this._device.sleep(1000);
+    }
   }
 
   /**
@@ -175,7 +189,7 @@ class AdbMocker{
    * mock短信消息
    * @param num
    */
-  mockSMS(num = 10) {
+  mockSMS() {
 
   }
 
