@@ -150,7 +150,6 @@ class AdbMocker{
 
   /**
    * mock联系人
-   * @param num
    */
   async mockContacts() {
      await this._device.adbshell('pm clear com.android.providers.contacts');
@@ -160,7 +159,6 @@ class AdbMocker{
 
   /**
    * mock 通话记录, 只能mock打电话
-   * @param num
    */
   async mockCalls() {
     for(let i = 0; i < 20; i++) {
@@ -196,16 +194,15 @@ class AdbMocker{
   /** mock音乐文件
    * 应用的类型包括MUSIC
    */
-  mockMusics(num = 10) {
+  mockMusics() {
 
   }
 
   /**
    * mock视频文件
-   * 应用类型包括Video
    * @param num
    */
-  mockVideos(num = 3) {
+  mockVideos() {
 
   }
 
@@ -214,8 +211,8 @@ class AdbMocker{
    * 应用类型包括Photos
    * @param num
    */
-  mockPhotos(num = 10) {
-
+  async mockPhotos() {
+    await Device.shell(`adb push ${path.join(__dirname, "/../assets/photos/")} /sdcard/photos/`);
   }
 
   /**
