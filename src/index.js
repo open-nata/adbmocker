@@ -194,16 +194,16 @@ class AdbMocker{
   /** mock音乐文件
    * 应用的类型包括MUSIC
    */
-  mockMusics() {
-
+  async mockMusics() {
+    await Device.shell(`adb push ${path.join(__dirname, "/../assets/musics/")} /sdcard/musics/`);
   }
 
   /**
    * mock视频文件
    * @param num
    */
-  mockVideos() {
-
+  async mockVideos() {
+    await Device.shell(`adb push ${path.join(__dirname, "/../assets/videos/")} /sdcard/videos/`);
   }
 
   /**
@@ -219,8 +219,8 @@ class AdbMocker{
    * 将任何类型的文件push到设备的SD卡中
    * @param filePath
    */
-  pushFile(filePath) {
-
+  async pushFile(filePath) {
+    await Device.shell(`adb push ${filePath} /sdcard/others/`);
   }
 }
 export default AdbMocker
